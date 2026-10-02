@@ -1,12 +1,13 @@
 # AXI4 SPI Controller
 
-This project is an improved AXI4-Lite SPI master reference design built for a verification-focused portfolio. The RTL is organized for clarity, expandable register access, and realistic SPI timing behavior.
+This project is a stronger AXI4-Lite SPI master reference design built for a verification-focused portfolio. The RTL is organized for clarity, expandable register access, explicit protocol behavior, and realistic SPI timing for hardware verification work.
 
 ## What is improved
 
 - Cleaner AXI4-Lite write/read control flow
 - More deterministic SPI shift-register timing
 - Better register map handling and transaction gating
+- Proper invalid-address response handling
 - Reusable UVM write/read sequences
 - Functional coverage collection for register access and data values
 - A stronger verification harness suitable for a DV portfolio

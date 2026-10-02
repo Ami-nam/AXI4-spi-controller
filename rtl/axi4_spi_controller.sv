@@ -60,42 +60,39 @@ module axi4_spi_controller (
       prev_spi_busy  <= spi_busy;
 
       if (axi_if.awvalid && axi_if.wvalid) begin
-        unique case (axi_if.awaddr[7:0])
-          REG_CTRL: begin
-            reg_ctrl <= axi_if.wdata & 32'h00000003;
-            if (axi_if.wdata[1] && axi_if.wdata[0]) begin
-              start_transfer <= 1'b1;
-            end
+        if (axi_if.awaddr[7:0] == REG_CTRL) begin
+          reg_ctrl <= axi_if.wdata & 32'h00000003;
+          if (axi_if.wdata[1] && axi_if.wdata[0]) begin
+            start_transfer <= 1'b1;
           end
-          REG_DIV: begin
-            reg_div <= axi_if.wdata;
+          axi_if.bresp <= 2'b00;
+        end else if (axi_if.awaddr[7:0] == REG_DIV) begin
+          reg_div <= axi_if.wdata;
+          axi_if.bresp <= 2'b00;
+        end else if (axi_if.awaddr[7:0] == REG_TX) begin
+          reg_tx <= axi_if.wdata;
+          if (reg_ctrl[0]) begin
+            start_transfer <= 1'b1;
           end
-          REG_TX: begin
-            reg_tx <= axi_if.wdata;
-            if (reg_ctrl[0]) begin
-              start_transfer <= 1'b1;
-            end
-          end
-          default: begin
-          end
-        endcase
+          axi_if.bresp <= 2'b00;
+        end else begin
+          axi_if.bresp <= 2'b10;
+        end
 
         axi_if.bvalid <= 1'b1;
-        axi_if.bresp  <= 2'b00;
       end
 
       if (axi_if.arvalid) begin
         unique case (axi_if.araddr[7:0])
-          REG_CTRL:   axi_if.rdata <= reg_ctrl;
-          REG_DIV:    axi_if.rdata <= reg_div;
-          REG_TX:     axi_if.rdata <= reg_tx;
-          REG_RX:     axi_if.rdata <= reg_rx;
-          REG_STATUS: axi_if.rdata <= {31'h0, spi_busy};
-          default:    axi_if.rdata <= 32'h0;
+          REG_CTRL:   begin axi_if.rdata <= reg_ctrl; axi_if.rresp <= 2'b00; end
+          REG_DIV:    begin axi_if.rdata <= reg_div; axi_if.rresp <= 2'b00; end
+          REG_TX:     begin axi_if.rdata <= reg_tx; axi_if.rresp <= 2'b00; end
+          REG_RX:     begin axi_if.rdata <= reg_rx; axi_if.rresp <= 2'b00; end
+          REG_STATUS: begin axi_if.rdata <= reg_status; axi_if.rresp <= 2'b00; end
+          default:    begin axi_if.rdata <= 32'h0; axi_if.rresp <= 2'b10; end
         endcase
 
         axi_if.rvalid <= 1'b1;
-        axi_if.rresp  <= 2'b00;
       end
 
       if (prev_spi_busy && !spi_busy) begin
