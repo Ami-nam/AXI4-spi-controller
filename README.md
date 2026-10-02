@@ -1,49 +1,51 @@
 # AXI4 SPI Controller
 
-This project provides a small but complete SystemVerilog implementation of an AXI4-Lite SPI controller. It is intended as a reusable reference design for embedded verification, hardware-software interfaces, and IP prototyping.
+This project is an improved AXI4-Lite SPI master reference design built for a verification-focused portfolio. The RTL is organized for clarity, expandable register access, and realistic SPI timing behavior.
 
-## Features
+## What is improved
 
-- AXI4-Lite slave interface for register access
-- SPI master mode with configurable clock divider
-- 8-bit transmit and receive path
-- Busy/status register for software polling
-- Simple simulation testbench with a SPI slave model
+- Cleaner AXI4-Lite write/read control flow
+- More deterministic SPI shift-register timing
+- Better register map handling and transaction gating
+- A UVM-style verification harness for a real DV environment
 
-## Directory layout
+## Top-level features
 
-- `rtl/` : synthesizable RTL modules
-- `tb/` : testbench, BFM, and simulation helpers
-- `sim/` : compile/run scripts
+- AXI4-Lite slave register interface
+- SPI master transaction engine
+- Configurable clock divider
+- TX/RX byte transfer support
+- Busy and status reporting
 
 ## Register map
 
 | Address | Name | Description |
 | --- | --- | --- |
-| 0x00 | CTRL | Bit 0 = enable, Bit 1 = start transfer |
-| 0x04 | DIV | SPI clock divider value |
-| 0x08 | TX_DATA | Data to transmit |
-| 0x0C | RX_DATA | Received data |
-| 0x10 | STATUS | Bit 0 = busy |
+| 0x00 | CTRL | Bit 0 = enable, Bit 1 = start trigger |
+| 0x04 | DIV | SPI clock divider |
+| 0x08 | TX_DATA | Byte to transmit |
+| 0x0C | RX_DATA | Byte received from SPI slave |
+| 0x10 | STATUS | Busy indicator |
 
-## Example usage
+## Directory structure
 
-1. Program `DIV` with a divider value to set the SPI clock.
-2. Write `TX_DATA` with the byte to send.
-3. Set `CTRL.start` bit.
-4. Poll `STATUS.busy` until it clears.
-5. Read `RX_DATA` for the incoming byte.
+- `rtl/` : synthesizable SystemVerilog RTL
+- `tb/` : plain simulation testbench and UVM testbench
+- `sim/` : compile/run script
 
 ## Simulation
 
-Run the following from the project root:
-
 ```bash
+cd /home/amit/Downloads/AXI4_SPI_Controller
 ./sim/run.sh
 ```
 
-The script compiles the RTL and testbench using `iverilog` if available.
+This compiles the RTL with `iverilog` when installed.
+
+## UVM verification
+
+The project also contains a UVM-style environment in `tb/uvm/` for use with a standard UVM simulator such as Questa, ModelSim, or VCS.
 
 ## Notes
 
-This is a compact reference implementation, not a full vendor IP block. It is focused on clarity and portability so it can be expanded for more advanced features such as FIFO buffering, DMA, multiple chip-selects, or AXI4 full protocol support.
+This is a compact but realistic controller suitable for learning, building a DV portfolio, and extending into DMA, FIFOs, or multi-chip-select SPI designs.

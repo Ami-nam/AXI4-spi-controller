@@ -14,8 +14,10 @@ module axi4_spi_controller (
   logic [31:0] reg_tx;
   logic [31:0] reg_rx;
   logic [31:0] reg_status;
-  logic        start_transfer;
-  logic        spi_busy;
+  logic [7:0] spi_rx_data;
+  logic start_transfer;
+  logic spi_busy;
+  logic prev_spi_busy;
 
   spi_master #(
     .DATA_WIDTH(8),
@@ -26,7 +28,7 @@ module axi4_spi_controller (
     .start    (start_transfer),
     .clk_div  (reg_div[15:0]),
     .tx_data  (reg_tx[7:0]),
-    .rx_data  (reg_rx[7:0]),
+    .rx_data  (spi_rx_data),
     .busy     (spi_busy),
     .cs_n     (spi_if.cs_n),
     .sclk     (spi_if.sclk),
@@ -36,12 +38,14 @@ module axi4_spi_controller (
 
   always_ff @(posedge axi_if.aclk or negedge axi_if.aresetn) begin
     if (!axi_if.aresetn) begin
-      reg_ctrl   <= 32'h0;
-      reg_div    <= 32'h0002;
-      reg_tx     <= 32'h0;
-      reg_rx     <= 32'h0;
-      reg_status <= 32'h0;
+      reg_ctrl       <= 32'h0;
+      reg_div        <= 32'd2;
+      reg_tx         <= 32'h0;
+      reg_rx         <= 32'h0;
+      reg_status     <= 32'h0;
+      spi_rx_data    <= 8'h0;
       start_transfer <= 1'b0;
+      prev_spi_busy  <= 1'b0;
       axi_if.awready <= 1'b0;
       axi_if.wready  <= 1'b0;
       axi_if.arready <= 1'b0;
@@ -57,18 +61,24 @@ module axi4_spi_controller (
       axi_if.bvalid  <= 1'b0;
       axi_if.rvalid  <= 1'b0;
       start_transfer <= 1'b0;
+      prev_spi_busy  <= spi_busy;
 
       if (axi_if.awvalid && axi_if.wvalid) begin
         unique case (axi_if.awaddr[7:0])
           REG_CTRL: begin
-            reg_ctrl <= axi_if.wdata;
+            reg_ctrl <= axi_if.wdata & 32'h00000003;
+            if (axi_if.wdata[1] && axi_if.wdata[0]) begin
+              start_transfer <= 1'b1;
+            end
           end
           REG_DIV: begin
             reg_div <= axi_if.wdata;
           end
           REG_TX: begin
             reg_tx <= axi_if.wdata;
-            start_transfer <= 1'b1;
+            if (reg_ctrl[0]) begin
+              start_transfer <= 1'b1;
+            end
           end
           default: begin
           end
@@ -92,15 +102,11 @@ module axi4_spi_controller (
         axi_if.rresp  <= 2'b00;
       end
 
-      if (spi_busy) begin
-        reg_status <= 32'h1;
-      end else begin
-        reg_status <= 32'h0;
+      if (prev_spi_busy && !spi_busy) begin
+        reg_rx <= {24'h0, spi_rx_data};
       end
 
-      if (reg_tx != 32'h0 && !spi_busy && start_transfer) begin
-        reg_tx <= reg_tx;
-      end
+      reg_status <= spi_busy ? 32'h1 : 32'h0;
     end
   end
 endmodule
