@@ -1,13 +1,9 @@
+import axi4_spi_registers_pkg::*;
+
 module axi4_spi_controller (
   axi4_lite_if.slave axi_if,
   spi_if.master spi_if
 );
-
-  localparam int REG_CTRL   = 8'h00;
-  localparam int REG_DIV    = 8'h04;
-  localparam int REG_TX     = 8'h08;
-  localparam int REG_RX     = 8'h0C;
-  localparam int REG_STATUS = 8'h10;
 
   logic [31:0] reg_ctrl;
   logic [31:0] reg_div;

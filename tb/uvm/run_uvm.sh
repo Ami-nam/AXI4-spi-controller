@@ -18,6 +18,7 @@ if [ -z "$QUESTA_HOME" ]; then
 fi
 
 vlog +acc -mfcu -timescale 1ns/1ps \
+  "$ROOT_DIR/rtl/axi4_spi_registers_pkg.sv" \
   "$ROOT_DIR/rtl/axi4_lite_if.sv" \
   "$ROOT_DIR/rtl/spi_if.sv" \
   "$ROOT_DIR/rtl/spi_master.sv" \

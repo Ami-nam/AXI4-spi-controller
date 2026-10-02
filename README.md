@@ -7,7 +7,9 @@ This project is an improved AXI4-Lite SPI master reference design built for a ve
 - Cleaner AXI4-Lite write/read control flow
 - More deterministic SPI shift-register timing
 - Better register map handling and transaction gating
-- A UVM-style verification harness for a real DV environment
+- Reusable UVM write/read sequences
+- Functional coverage collection for register access and data values
+- A stronger verification harness suitable for a DV portfolio
 
 ## Top-level features
 
@@ -44,7 +46,12 @@ This compiles the RTL with `iverilog` when installed.
 
 ## UVM verification
 
-The project also contains a UVM-style environment in `tb/uvm/` for use with a standard UVM simulator such as Questa, ModelSim, or VCS.
+The project contains a UVM-style environment in `tb/uvm/` with:
+
+- sequence-based register access
+- driver + monitor + scoreboard
+- coverage collection for address and data bins
+- a simulator wrapper for Questa/ModelSim-style flows
 
 ## Notes
 

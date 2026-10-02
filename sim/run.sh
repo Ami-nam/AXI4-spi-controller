@@ -14,6 +14,7 @@ fi
 iverilog -g2012 -Wall \
   -I "$ROOT_DIR/rtl" \
   -I "$ROOT_DIR/tb" \
+  "$ROOT_DIR/rtl/axi4_spi_registers_pkg.sv" \
   "$ROOT_DIR/rtl/axi4_lite_if.sv" \
   "$ROOT_DIR/rtl/spi_if.sv" \
   "$ROOT_DIR/rtl/spi_master.sv" \

@@ -1,6 +1,9 @@
 package axi4_spi_uvm_pkg;
   import uvm_pkg::*;
+  import axi4_spi_registers_pkg::*;
   `include "uvm_macros.svh"
+  `include "axi4_spi_sequence.sv"
+  `include "axi4_spi_coverage.sv"
 
   class axi4_spi_item extends uvm_sequence_item;
     rand bit [31:0] addr;
@@ -124,7 +127,8 @@ package axi4_spi_uvm_pkg;
     axi4_spi_sequencer sequencer;
     axi4_spi_driver    driver;
     axi4_spi_monitor   monitor;
-    spi_scoreboard    scoreboard;
+    spi_scoreboard     scoreboard;
+    axi4_spi_coverage  coverage;
 
     function new(string name = "axi4_spi_env", uvm_component parent = null);
       super.new(name, parent);
@@ -133,14 +137,16 @@ package axi4_spi_uvm_pkg;
     virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
       sequencer = axi4_spi_sequencer::type_id::create("sequencer", this);
-      driver     = axi4_spi_driver::type_id::create("driver", this);
-      monitor    = axi4_spi_monitor::type_id::create("monitor", this);
+      driver    = axi4_spi_driver::type_id::create("driver", this);
+      monitor   = axi4_spi_monitor::type_id::create("monitor", this);
       scoreboard = spi_scoreboard::type_id::create("scoreboard", this);
+      coverage  = axi4_spi_coverage::type_id::create("coverage", this);
     endfunction
 
     virtual function void connect_phase(uvm_phase phase);
       driver.seq_item_port.connect(sequencer.seq_item_export);
       monitor.ap.connect(scoreboard.mon_imp);
+      monitor.ap.connect(coverage.analysis_export);
     endfunction
   endclass
 
@@ -159,21 +165,34 @@ package axi4_spi_uvm_pkg;
     endfunction
 
     virtual task run_phase(uvm_phase phase);
-      axi4_spi_item req;
+      axi4_spi_write_seq wr_seq;
+      axi4_spi_read_seq  rd_seq;
+
       phase.raise_objection(this);
-      req = axi4_spi_item::type_id::create("req");
-      req.write = 1'b1;
-      req.addr  = 32'h00;
-      req.data  = 32'h00000003;
-      env.sequencer.execute_item(req);
-      req.write = 1'b1;
-      req.addr  = 32'h04;
-      req.data  = 32'h00000002;
-      env.sequencer.execute_item(req);
-      req.write = 1'b1;
-      req.addr  = 32'h08;
-      req.data  = 32'h000000A5;
-      env.sequencer.execute_item(req);
+
+      wr_seq = axi4_spi_write_seq::type_id::create("wr_seq");
+      wr_seq.addr = REG_CTRL;
+      wr_seq.data = 32'h00000003;
+      wr_seq.start(env.sequencer);
+
+      wr_seq = axi4_spi_write_seq::type_id::create("wr_seq_2");
+      wr_seq.addr = REG_DIV;
+      wr_seq.data = 32'h00000002;
+      wr_seq.start(env.sequencer);
+
+      wr_seq = axi4_spi_write_seq::type_id::create("wr_seq_3");
+      wr_seq.addr = REG_TX;
+      wr_seq.data = 32'h000000A5;
+      wr_seq.start(env.sequencer);
+
+      rd_seq = axi4_spi_read_seq::type_id::create("rd_seq");
+      rd_seq.addr = REG_STATUS;
+      rd_seq.start(env.sequencer);
+
+      rd_seq = axi4_spi_read_seq::type_id::create("rd_seq_2");
+      rd_seq.addr = REG_RX;
+      rd_seq.start(env.sequencer);
+
       phase.drop_objection(this);
     endtask
   endclass
