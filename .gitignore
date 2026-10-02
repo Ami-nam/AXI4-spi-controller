@@ -1,0 +1,6 @@
+*.vvp
+*.vcd
+*.log
+*.swp
+*.swo
+.DS_Store
