@@ -5,10 +5,12 @@ This project is a stronger AXI4-Lite SPI master reference design built for a ver
 ## What is improved
 
 - Cleaner AXI4-Lite write/read control flow
-- More deterministic SPI shift-register timing
-- Better register map handling and transaction gating
+- More deterministic SPI shift-register timing with divider guarding
+- Safer transaction gating to prevent invalid start conditions
+- Better register map handling and status reporting during active and idle phases
 - Proper invalid-address response handling
 - Reusable UVM write/read sequences
+- Self-checking simulation assertions for protocol correctness
 - Functional coverage collection for register access and data values
 - A stronger verification harness suitable for a DV portfolio
 

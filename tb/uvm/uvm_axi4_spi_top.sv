@@ -11,12 +11,12 @@ module uvm_axi4_spi_top;
   spi_if spi_if_inst(.clk(clk), .rst_n(rst_n));
 
   axi4_spi_controller dut (
-    .axi_if(axi_if.slave),
-    .spi_if(spi_if_inst.master)
+    .axi_if(axi_if),
+    .spi_if(spi_if_inst)
   );
 
   spi_slave_model slave (
-    .spi(spi_if_inst.slave)
+    .spi(spi_if_inst)
   );
 
   initial begin
